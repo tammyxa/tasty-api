@@ -7,12 +7,17 @@ export async function handleKeywordSearch(keyword, cacheOption = false) {
     const searchResults = await api.searchTastyAPI(keyword);
     await db.create("search_history", searchResults);
     const selectedItem = await promptUserToSelect(searchResults);
+    
 
     let detailedData;
     if (cacheOption) {
-      detailedData = await db.create("search_cache", selectedItem);
+      detailedData = await db.find("search_cache", selectedItem.id);
+      if (!detailedData) {
+        detailedData = await api.getTastyAPIDetails(selectedItem.id);
+        await db.create("search_cache", detailedData);
+      }
     } else {
-      return await db.find("search_cache", selectedItem.id);
+      detailedData = await api.getTastyAPIDetails(selectedItem.id);
     }
 
     // Display detailed data to the user in a user-friendly format
@@ -23,7 +28,12 @@ export async function handleKeywordSearch(keyword, cacheOption = false) {
 }
 
 export async function handleSearchHistory() {
-  displayData(await db.find("search_history"), true);
+  try {
+    const historyData = await db.find("search_history");
+    displayData(historyData, true);
+  } catch (error) {
+    console.error("Failed to retrieve search history:", error);
+  }
 }
 
 async function promptUserToSelect(searchResults) {
@@ -62,17 +72,26 @@ async function retrieveFromAPI(selectedItem) {
 }
 
 // Function to display detailed data to the user in a user-friendly format
-function displayData(detailedData, history) {
-  if (history) {
-    detailedData.forEach((dish, i) => {
-      console.log(i, dish.name);
+function displayData(detailedData, isHistory) {
+  if (!isHistory) {
+    console.log(`Name: ${detailedData.name}`);
+    console.log(`Description: ${detailedData.description}`);
+    console.log(`Instuctions:`);
+    detailedData.instructions.forEach((instruction, i) => {
+      console.log(`${i + 1}: ${instruction.display_text}`);
     });
+
   } else {
     detailedData.forEach((dish, i) => {
-      console.log(i, dish.name);
-      dish.instructions.forEach((step, j) => {
-        console.log(j, step);
+      console.log(`${i + 1}. ${dish.name}`);
+      if (Array.isArray(dish.instruction)){
+        dish.instructions.forEach((step, j) => {
+        console.log(`${j + 1}: ${step.display_text}`);
       });
+      } else {
+        console.log(" No instructions available")
+      }
+      
     });
   }
 }
