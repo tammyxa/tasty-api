@@ -9,6 +9,7 @@ export async function searchTastyAPI(keyword) {
       size: "3",
       tags: "under_30_minutes",
       q: keyword,
+
     },
     headers: {
       "X-RapidAPI-Key": "6f15063c3bmshf4bcb7eca9f8351p158110jsn64e010060860",
@@ -21,21 +22,19 @@ export async function searchTastyAPI(keyword) {
     return response.data.results;
   } catch (error) {
     console.error("API Request Fail", error);
+    throw error;
   }
 }
 
-export async function getTastyAPIDetails(identifier) {
+export async function getTastyAPIDetails(recipeId) {
   const options = {
     method: "GET",
-    url: "https://tasty.p.rapidapi.com/recipes/list",
+    url: "https://tasty.p.rapidapi.com/recipes/get-more-info",
     params: {
-      from: "0",
-      size: "1",
-      tags: "under_30_minutes",
-      q: identifier,
+      id: recipeId,
     },
     headers: {
-      "X-RapidAPI-Key": "a1a2ca24bamsh6ff242fbc2e1c54p139a6ejsnc9809288bc13",
+      "X-RapidAPI-Key": "fca13cf3f7msh06ff7b551428563p1b2b3cjsncf41a3f8f00f",
       "X-RapidAPI-Host": "tasty.p.rapidapi.com",
     },
   };
