@@ -1,11 +1,12 @@
 {
   "name": "midterm-project",
   "version": "1.0.0",
-  "description": "A CLI for searching recipes using the Tasty API",
+  "description": "",
   "main": "cli.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node cli.js"
   },
   "author": "Tammy Xaypraseuth",
   "contributors": [
