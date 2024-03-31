@@ -45,9 +45,13 @@ export async function handleKeywordSearch(keyword, cacheOption = false) {
 }
 
 export async function handleSearchHistory() {
-  const historyData = await db.find("search_history");
-  console.log("Search History:");
-  historyData.forEach((e, i) => console.log(i + 1 + ". " + e.search));
+  try {
+    const historyData = await db.find("search_history");
+    console.log("Search History:");
+    historyData.forEach((e, i) => console.log(i + 1 + ". " + e.search));
+  } catch (error) {
+    console.error("Failed to retrieve search history:", error);
+  }
 }
 
 async function promptUserToSelect(searchResults) {

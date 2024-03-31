@@ -21,18 +21,16 @@ export async function searchTastyAPI(keyword) {
     return response.data.results;
   } catch (error) {
     console.error("API Request Fail", error);
+    throw error;
   }
 }
 
-export async function getTastyAPIDetails(identifier) {
+export async function getTastyAPIDetails(recipeId) {
   const options = {
     method: "GET",
-    url: "https://tasty.p.rapidapi.com/recipes/list",
+    url: "https://tasty.p.rapidapi.com/recipes/get-more-info",
     params: {
-      from: "0",
-      size: "1",
-      tags: "under_30_minutes",
-      q: identifier,
+      id: recipeId,
     },
     headers: {
       "X-RapidAPI-Key": "6f15063c3bmshf4bcb7eca9f8351p158110jsn64e010060860",
