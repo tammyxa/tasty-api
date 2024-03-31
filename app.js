@@ -1,42 +1,34 @@
 import * as api from "./api.js";
+import * as db from "./db.js";
 import inquirer from "inquirer";
-import cache from "./mock_database/search_cache.json";
-import history from "./mock_database/search_history.json";
 
 export async function handleKeywordSearch(keyword, cacheOption = false) {
-    //   const searchCache = require("./mock_database/search_cache.json");
-    
-    try {
-        const searchResults = await api.searchTastyAPI(keyword);
-        saveToDatabase(searchResults);
-        const selectedItem = await promptUserToSelect(searchResults);
-        
-        let detailedData;
-        if (cacheOption) {
-      detailedData = await retrieveFromCache(selectedItem);
+  try {
+    const searchResults = await api.searchTastyAPI(keyword);
+    await db.create("search_history", searchResults);
+    const selectedItem = await promptUserToSelect(searchResults);
+
+    let detailedData;
+    if (cacheOption) {
+      detailedData = await db.create("search_cache", selectedItem);
     } else {
-        detailedData = await retrieveFromAPI(selectedItem);
-        saveToCache(selectedItem);
+      return await db.find("search_cache", selectedItem.id);
     }
-    
+
     // Display detailed data to the user in a user-friendly format
-    displayData(detailedData);
-} catch (error) {
+    displayData(selectedItem, false);
+  } catch (error) {
     console.error("An error occurred:", error);
-}
-}
-
-function saveToDatabase(data) {
-    history.push(data);
+  }
 }
 
-export async function handleSearchHistory(){
-    displayData(history);
+export async function handleSearchHistory() {
+  displayData(await db.find("search_history"), true);
 }
 
 async function promptUserToSelect(searchResults) {
   const options = (searchResults ?? []).map((result, i) => ({
-    name: `${i}. ${result.name}`,
+    name: `${i + 1}. ${result.name}`,
     value: result,
   }));
 
@@ -54,7 +46,7 @@ async function promptUserToSelect(searchResults) {
 
 // Function to retrieve detailed data for the selected item from the cache
 async function retrieveFromCache(selectedItem) {
-  for (const )
+  //   for (const )
 }
 
 // Function to retrieve detailed data for the selected item from the API
@@ -70,7 +62,17 @@ async function retrieveFromAPI(selectedItem) {
 }
 
 // Function to display detailed data to the user in a user-friendly format
-function displayData(detailedData) {
-  
+function displayData(detailedData, history) {
+  if (history) {
+    detailedData.forEach((dish, i) => {
+      console.log(i, dish.name);
+    });
+  } else {
+    detailedData.forEach((dish, i) => {
+      console.log(i, dish.name);
+      dish.instructions.forEach((step, j) => {
+        console.log(j, step);
+      });
+    });
+  }
 }
-
