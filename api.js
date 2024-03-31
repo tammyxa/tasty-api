@@ -35,7 +35,7 @@ export async function getTastyAPIDetails(identifier) {
       q: identifier,
     },
     headers: {
-      "X-RapidAPI-Key": "a1a2ca24bamsh6ff242fbc2e1c54p139a6ejsnc9809288bc13",
+      "X-RapidAPI-Key": "6f15063c3bmshf4bcb7eca9f8351p158110jsn64e010060860",
       "X-RapidAPI-Host": "tasty.p.rapidapi.com",
     },
   };

@@ -5,25 +5,49 @@ import inquirer from "inquirer";
 export async function handleKeywordSearch(keyword, cacheOption = false) {
   try {
     const searchResults = await api.searchTastyAPI(keyword);
-    await db.create("search_history", searchResults);
+    const data = {
+      search: keyword,
+      resultCount: searchResults.length,
+      searchResults: searchResults,
+    };
+    await db.create("search_history", data);
     const selectedItem = await promptUserToSelect(searchResults);
 
     let detailedData;
     if (cacheOption) {
-      detailedData = await db.create("search_cache", selectedItem);
+      // Check if data is available in the cache
+      const cachedData = await db.find("search_cache", keyword);
+
+      if (cachedData) {
+        // If data is found in the cache, use it
+        detailedData = cachedData;
+      } else {
+        // If data is not found in the cache, fetch it from the API
+        detailedData = await api.getTastyAPIDetails(
+          selectedItem.uniqueIdentifier
+        );
+
+        // Save fetched data to the cache
+        await db.create("search_cache", { detailedData });
+      }
     } else {
-      return await db.find("search_cache", selectedItem.id);
+      detailedData = await api.getTastyAPIDetails(
+        selectedItem.uniqueIdentifier
+      );
+      await db.create("search_cache", detailedData);
     }
 
     // Display detailed data to the user in a user-friendly format
-    displayData(selectedItem, false);
+    displayData(detailedData);
   } catch (error) {
     console.error("An error occurred:", error);
   }
 }
 
 export async function handleSearchHistory() {
-  displayData(await db.find("search_history"), true);
+  const historyData = await db.find("search_history");
+  console.log("Search History:");
+  historyData.forEach((e, i) => console.log(i + 1 + ". " + e.search));
 }
 
 async function promptUserToSelect(searchResults) {
@@ -44,35 +68,14 @@ async function promptUserToSelect(searchResults) {
   return selectedResult;
 }
 
-// Function to retrieve detailed data for the selected item from the cache
-async function retrieveFromCache(selectedItem) {
-  //   for (const )
-}
-
-// Function to retrieve detailed data for the selected item from the API
-async function retrieveFromAPI(selectedItem) {
-  try {
-    const response = await axios.get(`API_ENDPOINT/${selectedItem.id}`); // Replace API_ENDPOINT with the actual endpoint URL and selectedItem.id with the unique identifier of the selected item
-    return response.data; // Return the response data
-  } catch (error) {
-    // Handle any errors (e.g., network error, server error)
-    console.error("Error retrieving data from API:", error);
-    throw error; // Rethrow the error to be handled by the caller
-  }
-}
-
 // Function to display detailed data to the user in a user-friendly format
-function displayData(detailedData, history) {
-  if (history) {
-    detailedData.forEach((dish, i) => {
-      console.log(i, dish.name);
-    });
-  } else {
-    detailedData.forEach((dish, i) => {
-      console.log(i, dish.name);
-      dish.instructions.forEach((step, j) => {
-        console.log(j, step);
-      });
-    });
-  }
+function displayData(detailedData) {
+  console.log(
+    detailedData.results[0].name + "\n_____________________________\n"
+  );
+  detailedData.results[0].nutrition.forEach((n) => console.log(n + "\n"));
+  console.log("Instructions:\n");
+  detailedData.results[0].instructions.forEach((instruction) =>
+    console.log(instruction + "\n")
+  );
 }

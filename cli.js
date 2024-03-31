@@ -2,10 +2,8 @@
 
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-// import { searchTastyAPI, getTastyAPIDetails } from "./api.js";
 import { handleKeywordSearch, handleSearchHistory } from "./app.js";
 
-// Define command-line interface using Yargs
 const argv = yargs(hideBin(process.argv))
   .command(
     "search <keyword>",
