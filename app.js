@@ -15,26 +15,13 @@ export async function handleKeywordSearch(keyword, cacheOption = false) {
 
     let detailedData;
     if (cacheOption) {
-      // Check if data is available in the cache
-      const cachedData = await db.find("search_cache", keyword);
-
-      if (cachedData) {
-        // If data is found in the cache, use it
-        detailedData = cachedData;
-      } else {
-        // If data is not found in the cache, fetch it from the API
-        detailedData = await api.getTastyAPIDetails(
-          selectedItem.uniqueIdentifier
-        );
-
-        // Save fetched data to the cache
-        await db.create("search_cache", { detailedData });
+      detailedData = await db.find("search_cache", selectedItem.id);
+      if (!detailedData) {
+        detailedData = await api.getTastyAPIDetails(selectedItem.id);
+        await db.create("search_cache", detailedData);
       }
     } else {
-      detailedData = await api.getTastyAPIDetails(
-        selectedItem.uniqueIdentifier
-      );
-      await db.create("search_cache", detailedData);
+      detailedData = await api.getTastyAPIDetails(selectedItem.id);
     }
 
     // Display detailed data to the user in a user-friendly format
@@ -74,12 +61,10 @@ async function promptUserToSelect(searchResults) {
 
 // Function to display detailed data to the user in a user-friendly format
 function displayData(detailedData) {
-  console.log(
-    detailedData.results[0].name + "\n_____________________________\n"
-  );
-  detailedData.results[0].nutrition.forEach((n) => console.log(n + "\n"));
+  console.log("\n" + detailedData.name.toUpperCase() + "\n");
+  console.log(detailedData.description + "\n_____________________________\n");
   console.log("Instructions:\n");
-  detailedData.results[0].instructions.forEach((instruction) =>
-    console.log(instruction + "\n")
+  detailedData.instructions.forEach((step, i) =>
+    console.log(`${i + 1}. ${step.display_text}`)
   );
 }
