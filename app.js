@@ -20,7 +20,13 @@ export async function handleKeywordSearch(keyword, cacheOption = false) {
         detailedData = await api.getTastyAPIDetails(selectedItem.id);
         await db.create("search_cache", detailedData);
       }
+      detailedData = await db.find("search_cache", selectedItem.id);
+      if (!detailedData) {
+        detailedData = await api.getTastyAPIDetails(selectedItem.id);
+        await db.create("search_cache", detailedData);
+      }
     } else {
+      detailedData = await api.getTastyAPIDetails(selectedItem.id);
       detailedData = await api.getTastyAPIDetails(selectedItem.id);
     }
 

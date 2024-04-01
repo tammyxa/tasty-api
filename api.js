@@ -22,9 +22,11 @@ export async function searchTastyAPI(keyword) {
   } catch (error) {
     console.error("API Request Fail", error);
     throw error;
+    throw error;
   }
 }
 
+export async function getTastyAPIDetails(recipeId) {
 export async function getTastyAPIDetails(recipeId) {
   const options = {
     method: "GET",
