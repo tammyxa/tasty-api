@@ -27,7 +27,6 @@ export async function searchTastyAPI(keyword) {
 }
 
 export async function getTastyAPIDetails(recipeId) {
-export async function getTastyAPIDetails(recipeId) {
   const options = {
     method: "GET",
     url: "https://tasty.p.rapidapi.com/recipes/get-more-info",
