@@ -22,7 +22,6 @@ export async function searchTastyAPI(keyword) {
   } catch (error) {
     console.error("API Request Fail", error);
     throw error;
-    throw error;
   }
 }
 
