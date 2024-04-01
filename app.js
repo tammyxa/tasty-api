@@ -5,9 +5,13 @@ import inquirer from "inquirer";
 export async function handleKeywordSearch(keyword, cacheOption = false) {
   try {
     const searchResults = await api.searchTastyAPI(keyword);
-    await db.create("search_history", searchResults);
+    const data = {
+      search: keyword,
+      resultCount: searchResults.length,
+      searchResults: searchResults,
+    };
+    await db.create("search_history", data);
     const selectedItem = await promptUserToSelect(searchResults);
-    
 
     let detailedData;
     if (cacheOption) {
@@ -16,12 +20,18 @@ export async function handleKeywordSearch(keyword, cacheOption = false) {
         detailedData = await api.getTastyAPIDetails(selectedItem.id);
         await db.create("search_cache", detailedData);
       }
+      detailedData = await db.find("search_cache", selectedItem.id);
+      if (!detailedData) {
+        detailedData = await api.getTastyAPIDetails(selectedItem.id);
+        await db.create("search_cache", detailedData);
+      }
     } else {
+      detailedData = await api.getTastyAPIDetails(selectedItem.id);
       detailedData = await api.getTastyAPIDetails(selectedItem.id);
     }
 
     // Display detailed data to the user in a user-friendly format
-    displayData(selectedItem, false);
+    displayData(detailedData);
   } catch (error) {
     console.error("An error occurred:", error);
   }
@@ -30,7 +40,8 @@ export async function handleKeywordSearch(keyword, cacheOption = false) {
 export async function handleSearchHistory() {
   try {
     const historyData = await db.find("search_history");
-    displayData(historyData, true);
+    console.log("Search History:");
+    historyData.forEach((e, i) => console.log(i + 1 + ". " + e.search));
   } catch (error) {
     console.error("Failed to retrieve search history:", error);
   }
@@ -54,44 +65,12 @@ async function promptUserToSelect(searchResults) {
   return selectedResult;
 }
 
-// Function to retrieve detailed data for the selected item from the cache
-async function retrieveFromCache(selectedItem) {
-  //   for (const )
-}
-
-// Function to retrieve detailed data for the selected item from the API
-async function retrieveFromAPI(selectedItem) {
-  try {
-    const response = await axios.get(`API_ENDPOINT/${selectedItem.id}`); // Replace API_ENDPOINT with the actual endpoint URL and selectedItem.id with the unique identifier of the selected item
-    return response.data; // Return the response data
-  } catch (error) {
-    // Handle any errors (e.g., network error, server error)
-    console.error("Error retrieving data from API:", error);
-    throw error; // Rethrow the error to be handled by the caller
-  }
-}
-
 // Function to display detailed data to the user in a user-friendly format
-function displayData(detailedData, isHistory) {
-  if (!isHistory) {
-    console.log(`Name: ${detailedData.name}`);
-    console.log(`Description: ${detailedData.description}`);
-    console.log(`Instuctions:`);
-    detailedData.instructions.forEach((instruction, i) => {
-      console.log(`${i + 1}: ${instruction.display_text}`);
-    });
-
-  } else {
-    detailedData.forEach((dish, i) => {
-      console.log(`${i + 1}. ${dish.name}`);
-      if (Array.isArray(dish.instruction)){
-        dish.instructions.forEach((step, j) => {
-        console.log(`${j + 1}: ${step.display_text}`);
-      });
-      } else {
-        console.log(" No instructions available")
-      }
-      
-    });
-  }
+function displayData(detailedData) {
+  console.log("\n" + detailedData.name.toUpperCase() + "\n");
+  console.log(detailedData.description + "\n_____________________________\n");
+  console.log("Instructions:\n");
+  detailedData.instructions.forEach((step, i) =>
+    console.log(`${i + 1}. ${step.display_text}`)
+  );
 }
