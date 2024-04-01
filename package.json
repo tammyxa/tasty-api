@@ -10,7 +10,10 @@
   },
   "author": "Tammy Xaypraseuth",
   "contributors": [
-    "Xihao Wang"
+    "Xihao Wang",
+    "David Garza",
+    "Abraham Diaz",
+    "Andrew Zou"
   ],
   "license": "ISC",
   "dependencies": {
