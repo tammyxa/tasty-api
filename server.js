@@ -12,6 +12,13 @@ try {
 
   //connect to Mongo
   await db.connect();
+
+  const testData = {
+    id: 0,
+    displayText: "TempData",
+  };
+
+  await db.create("search_history", testData);
 } catch (error) {
   console.error("Error: ", error);
 } finally {
